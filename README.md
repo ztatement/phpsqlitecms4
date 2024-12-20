@@ -5,6 +5,7 @@
 <a href="https://www.demo-seite.com/path/to/phpsqlitecms/">phpSQLiteCMS</a> ist ein einfaches und leichtes Open-Source-Web-Content-Management-System (CMS) basiert auf <a href="http://php.net/">PHP</a> und <a href="http://www.sqlite.org/">SQLite</a>. Als SQLite, Datei-basiert, l&#228;uft es einfach "out of the box" ohne Installation.
 
 Diese modifizierte Version4 in Deutsch basiert auf dem Original <a href="https://phpsqlitecms.hoschek.com/">phpSQLiteCMS</a>.
+Erfolgreich getestet unter Apache 2.4.62.1 und PHP 8.4.1.
 
 
 System Anforderungen
