@@ -9,9 +9,9 @@
  * @link http://phpsqlitecms.net/
  * @package phpSQLiteCMS
  *         
- * @author Thomas Boettcher <github[at]ztatement[dot]de>
+ * @author Thomas Boettcher <github[at]ztatement[dot]com>
  * @copyleft () 2016 ztatement
- * @version 3.2016.07.18.16.38 $Id: cms/index.php 1 2016-07-18 16:38:01Z ztatement $
+ * @version 4.5.0.2024.12.30 $Id: index.php 1 2025-01-01 01:11:09Z ztatement $
  * @link https://www.demo-seite.com/path/to/phpsqlitecms/
  * @package phpSQLiteCMS
  *         
@@ -50,51 +50,12 @@
 
 // if (substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') )
 /*
- * //Original
  * if (substr_count (filter_input (INPUT_SERVER, 'HTTP_ACCEPT_ENCODING', FILTER_SANITIZE_STRING), 'gzip') )
  * {
  * ob_start("ob_gzhandler");
  * } else {
  * ob_start();
  * }
- */
-/*
- * //Neu
- * function startOutputBuffering(): void
- * {
- * $acceptEncoding = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_ENCODING', FILTER_SANITIZE_STRING);
- * if ($acceptEncoding && strpos($acceptEncoding, 'gzip') !== false) {
- * ob_start("ob_gzhandler");
- * } else {
- * ob_start();
- * }
- * }
- */
-/*
- * /** Änderungen:
- * 1. **Entfernung von `FILTER_SANITIZE_STRING`**: die Verwendung von `FILTER_SANITIZE_STRING` entfernt, da sie in PHP8 nicht mehr empfohlen wird.
- * 2. **Verwendung von `htmlspecialchars()`**: Diese Funktion konvertiert spezielle HTML-Zeichen in ihre entsprechenden HTML-Entitäten, was hilft, XSS-Angriffe zu verhindern, wenn die Eingabe in HTML ausgegeben wird.
- * 3. **Überprüfung auf `null`**: überprüfen, ob `$acceptEncoding` nicht `null` ist, bevor wir `htmlspecialchars()` aufrufen.
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-/*
- * function startOutputBuffering(): void
- * {
- * $acceptEncoding = filter_input(INPUT_SERVER, 'HTTP_ACCEPT_ENCODING');
- * // Bereinigen der Eingabe, um HTML-Sonderzeichen zu konvertieren
- * if ($acceptEncoding !== null) {
- * $acceptEncoding = htmlspecialchars($acceptEncoding, ENT_QUOTES, 'UTF-8');
- * }
- * if ($acceptEncoding && strpos($acceptEncoding, 'gzip') !== false) {
- * ob_start("ob_gzhandler");
- * } else {
- * ob_start();
- * }
- * }
- * //Warning: ob_start(): Output handler 'ob_gzhandler' conflicts with 'zlib output compression
- * /** Änderungen:
- * - * **Überprüfung von `zlib.output_compression`**: Der Code prüft, ob die zlib-Komprimierung bereits aktiviert ist. Wenn ja, wird einfach `ob_start()` ohne den Gzip-Handler aufgerufen, um den Konflikt zu vermeiden.
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 function startOutputBuffering( ): void
 {
@@ -107,6 +68,7 @@ function startOutputBuffering( ): void
   }
 
   // Überprüfen, ob zlib.output_compression bereits aktiviert ist
+  # if ($acceptEncoding && strpos($acceptEncoding, 'gzip') !== false)
   if (ini_get('zlib.output_compression'))
   {
     ob_start(); // Nur ob_start ohne Handler
@@ -120,6 +82,14 @@ function startOutputBuffering( ): void
     ob_start();
   }
 }
+/*
+ * //Warning: ob_start(): Output handler 'ob_gzhandler' conflicts with 'zlib output compression
+ * Änderungen:
+ * Überprüfung von `zlib.output_compression`:
+ * Der Code prüft, ob die zlib-Komprimierung bereits aktiviert ist.
+ * Wenn ja, wird einfach `ob_start()` ohne den Gzip-Handler aufgerufen, um den Konflikt zu vermeiden.
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
 
 // Aufruf der Funktion
 startOutputBuffering();
@@ -176,13 +146,12 @@ try
   // load replacement functions for the multibyte string functions
   // if they are not available:
   # if(!defined('MB_CASE_LOWER')) require('./cms/includes/functions.mb_replacements.inc.php');
-
   require './cms/includes/classes/Database.php';
   $database = new Database();
 
   $settings = get_settings();
 
-  // access permission check for not registered users:
+  // Zugriffsberechtigungsprüfung für nicht registrierte Benutzer:
   if ($settings['check_access_permission'] == 1 && !isset($_SESSION[$settings['session_prefix'] . 'user_id']))
   {
     if (is_access_denied())
@@ -191,24 +160,30 @@ try
     }
   }
 
-  // set timezone:
+  // Setze Zeitzone:
   if ($settings['time_zone'])
   {
     date_default_timezone_set($settings['time_zone']);
   }
 
+  // Definiere URL- und Pfad-Konstanten
   define('BASE_URL', get_base_url());
   define('STATIC_URL', BASE_URL . 'static/'); // static.subdomain.com
   define('BASE_PATH', get_base_path());
 
   require BASE_PATH . 'cms/config/definitions.conf.php';
 
+  require_once BASE_PATH . 'cms/includes/classes/PlatzhalterBild.php'; // Einbinden der PlatzhalterBild-Klasse
+  $platzhalter = new PlatzhalterBild(); // Instanz der Klasse erstellen
+  $GLOBALS['platzhalter'] = $platzhalter; // Instanz in $GLOBALS speichern
+
   if ($settings['content_functions'] == 1)
   {
     require BASE_PATH . 'cms/includes/functions.content.inc.php';
   }
 
-  require './cms/includes/classes/Template.php';
+  // Template-Klasse einbinden
+  require BASE_PATH . 'cms/includes/classes/Template.php';
   $template = new Template();
   # $template->set_settings($settings);
 
@@ -232,10 +207,12 @@ try
     $template->assign('admin', false);
   }
 
+  // Setze die Template-Daten
   $template->assign('settings', $settings);
 
   $template->assign('BASE_URL', BASE_URL);
 
+  // Bestimme die Seite
   $qsp = explode(',', $qs);
   if ($qsp[0] == '')
   {
@@ -255,15 +232,15 @@ try
       $_GET['get_' . $i] = $qsp[$i];
     }
   }
-  /*
-   * # if(isset($_GET['get_1']) && $_GET['get_1']==IMAGE_IDENTIFIER && isset($_GET['get_2']))
-   * # {
-   * # // photo:
-   * # include(BASE_PATH.'cms/includes/photo.inc.php');
-   * # }
-   * # else
-   * # {
-   */
+
+  # if(isset($_GET['get_1']) && $_GET['get_1']==IMAGE_IDENTIFIER && isset($_GET['get_2']))
+  # {
+  # // photo:
+  # include(BASE_PATH.'cms/includes/photo.inc.php');
+  # }
+  # else
+  # {
+
   // regular content:
   include BASE_PATH . 'cms/includes/content.inc.php';
   # }
@@ -274,22 +251,6 @@ try
   }
 
   // display template:
-  /*
-   * if (isset($template_file)) {
-   * $template->assign('lang', Localization::$lang);
-   * $template->assign('content_type', $content_type);
-   * $template->assign('charset', Localization::$lang['charset']);
-   * header('Content-Type: ' . $content_type . '; charset=' . Localization::$lang['charset']);
-   * $template->display(BASE_PATH . 'cms/templates/' . $template_file);
-   * // create cache file:
-   * if (isset($cache)) {
-   * if ($cache->cacheId && $cache->doCaching) {
-   * $cache_content = $cache->createCacheContent($template->fetch(BASE_PATH . 'cms/templates/' . $template_file), $content_type, CHARSET);
-   * $cache->createChacheFile($cache_content);
-   * }
-   * }
-   * }
-   */
   function displayTemplate( $template, $template_file, $content_type, $cache = null )
   {
 
@@ -309,41 +270,48 @@ try
       $template->display(BASE_PATH . 'cms/templates/' . $template_file);
 
       // Cache-Datei erstellen, falls Cache-Objekt übergeben wurde
-      # #if (isset($cache)){
-      # #if ($cache->cacheId && $cache->doCaching){
+      # if (isset($cache)){
+      # if ($cache->cacheId && $cache->doCaching){
       if ($cache !== null && $cache->cacheId && $cache->doCaching)
       {
         $cache_content = $cache->createCacheContent($template->fetch(BASE_PATH . 'cms/templates/' . $template_file), $content_type, CHARSET);
         $cache->createChacheFile($cache_content);
       }
-      # #}
+      # }
     }
   }
 
-  # #displayTemplate($template, $template_file, $content_type, $cache);
+  // Template anzeigen
+  # displayTemplate($template, $template_file, $content_type, $cache);
   displayTemplate($template, $template_file, $content_type);
-}
+} // end try
+
 catch (Exception $exception)
 {
-  // end try
+
   include './cms/includes/exception.inc.php';
 }
-
-/**
+/*
+ * Änderungen:
+ * Entfernung von `FILTER_SANITIZE_STRING`**: die Verwendung von `FILTER_SANITIZE_STRING` entfernt,
+ * da sie in PHP8 nicht mehr empfohlen wird.
+ * Verwendung von `htmlspecialchars()`**: Diese Funktion konvertiert spezielle HTML-Zeichen
+ * in ihre entsprechenden HTML-Entitäten, was hilft, XSS-Angriffe zu verhindern,
+ * wenn die Eingabe in HTML ausgegeben wird.
+ * Überprüfung auf `null`**: überprüfen, ob `$acceptEncoding` nicht `null` ist,
+ * bevor wir `htmlspecialchars()` aufrufen.
+ * 
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
- * @LastModified: 2024-12-08 $Date$ $LastChangedDate: 2024-12-08 12:10:27 +0100 $
+ * @LastModified: 2025-01-01 $Date$ $LastChangedDate: 2025-01-01 01:11:09 +0100 $
  * @editor: $LastChangedBy: ztatement $
- * -------------
- * changelog:
+ * ---------------
+ * @see change.log
  *
- * $Date$ $Revision$ - Description
- * 2024-12-04: 4.1.4.2024.12.04 - ad function displayTemplate
- * 2024-12-03: 4.0.3.2024.12.04 - Modifid get_magic_quotes_gpc()
- * 2023-11-02: 4.0.2.2023.12.04 - x
- * 2023-11-01: 4.0.1.2023.12.04 - x
- * 2017-01-02: 3.2017.01.02.03.04 - Modifizierte Version und div. Updates
- * 2016-07-18: 3.2016.07.18.16.38 -x
- * 2016-07-18: 4.0.0 - Erste Veröffentlichung des neuen 4.x Stamm
+ * $Date$     : $Revision$          : $LastChangedBy$   - Description
+ * 2024-12-30 : 4.5.0.2024.12.30    : @ztatement        - @new: Platzhalter Bild.
+ * 2024-12-04 : 4.1.4.2024.12.04    : @ztatement        - ad function displayTemplate
+ * 2024-12-03 : 4.0.3.2024.12.04    : @ztatement        - Modifid get_magic_quotes_gpc()
+ * 2016-07-18 : 4.0.0 - Erste Veröffentlichung des neuen 4.x Stamm
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * Local variables:
  * tab-width: 2
