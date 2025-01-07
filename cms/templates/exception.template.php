@@ -1,6 +1,6 @@
 <?php
 /**
- * exception_template.inc
+ * exception.template
  */
 ?>
   <!-- head -->
@@ -41,3 +41,22 @@
  </body>
 </html>
 <?php
+/**
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+ * @LastModified: 2025-01-07 $Date$ $LastChangedDate: 2025-01-07 22:33:21 +0100 $
+ * @editor: $LastChangedBy: ztatement $
+ * @version 4.5.0.2025.01.07 $Id: cms/includes/exception.inc.php 1Z $
+ * -------------
+ * changelog:
+ * @see change.log
+ * 
+ * $Date$     : $Revision$        - Description
+ * 2025-01-07 : 4.5.0.2025.01.07  - auslagern der Fehlerseite "exception.template" aus exceptin.inc.php.
+ *                                  kleine Format korrekturen, Escaping von Ausgaben mit htmlspecialchars()
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+ * Local variables:
+ * tab-width: 2
+ * c-basic-offset: 2
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
