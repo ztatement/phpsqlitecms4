@@ -4,15 +4,24 @@
  */
 ?>
   <!-- head -->
-  <?php 
+<?php 
     // Sicherstellen, dass die Datei existiert, bevor sie eingebunden wird
     $header_path = BASE_PATH . 'cms/templates/head' . TPX;
-    if (file_exists($header_path)) {
-      require($header_path);
-    } else {
-      echo '<!-- Header template not found -->';
+    try
+    {
+      if (file_exists($header_path))
+      {
+        require($header_path);
+      }
+      else
+      {
+        throw new Exception($lang['error_Header_template_not_found']);
+      }
+    } catch (Exception $e)
+    {
+      echo '<!-- Header loading failed: ' . $e->getMessage() . ' -->';
     }
-  ?><!-- ./head -->
+?><!-- ./head -->
  <body>
 
   <section class="errors">
@@ -43,14 +52,16 @@
 <?php
 /**
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
- * @LastModified: 2025-01-07 $Date$ $LastChangedDate: 2025-01-07 22:33:21 +0100 $
+ * @LastModified: 2025-01-08 $Date$ $LastChangedDate: 2025-01-08 15:34:27 +0100 $
  * @editor: $LastChangedBy: ztatement $
- * @version 4.5.0.2025.01.07 $Id: cms/includes/exception.inc.php 1Z $
+ * @version 4.5.0.2025.01.08 $Id: cms/templates/exception.template.php 1Z $
  * -------------
  * changelog:
  * @see change.log
  * 
  * $Date$     : $Revision$        - Description
+ * 2025-01-08 : 4.5.0.2025.01.08  - die require()-Anweisung für das Head-Template in einen try-catch-Block gesetzt,
+ *                                  um Ausnahmen zu vermeiden, wenn die Datei nicht existiert.
  * 2025-01-07 : 4.5.0.2025.01.07  - auslagern der Fehlerseite "exception.template" aus exceptin.inc.php.
  *                                  kleine Format korrekturen, Escaping von Ausgaben mit htmlspecialchars()
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
