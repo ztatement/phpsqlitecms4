@@ -324,7 +324,7 @@ catch (Exception $exception)
  * ---------------
  * @see change.log
  *
- * $Date$     : $Revision$          : $LastChangedBy$   - Description
+ * $Date$     : $Revision$          : $LastChangedBy$  - Description
  * 2025-01-14 : 4.5.0.2025.01.14    : ztatement        - @fix: void und Caching-Mechanismus angepasst
  * 2024-12-30 : 4.5.0.2024.12.30    : ztatement        - @new: Platzhalter Bild.
  * 2024-12-04 : 4.1.4.2024.12.04    : ztatement        - ad function displayTemplate
