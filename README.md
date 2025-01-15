@@ -7,6 +7,10 @@
 Diese modifizierte Version4 in Deutsch basiert auf dem Original <a href="https://phpsqlitecms.hoschek.com/">phpSQLiteCMS</a> und wurde Erfolgreich getestet unter Apache 2.4.62.1 und PHP 8.4.2 .<br>
 Um das erstellen einer eigenen Webseite zu erleichtern wurde eine neue Klasse für Platzhalter Bilder hinzugefügt.
 
+<div class="container" style=".container{display:flex;justify-content:space-between;}.container img{max-width:48%;height:auto;}">
+  <img src="https://www.demo-seite.com/path/to/phpsqlitecms/assets/images/Bildschirmfoto_10-1-2025_phpSQLiteCMS.jpeg" alt="Bildschirmfoto" width="48%">
+  <img src="https://www.demo-seite.com/path/to/phpsqlitecms/assets/images/Bildschirmfoto_10-1-2025_phpSQLiteCMS2.jpeg" alt="Bildschirmfoto Dark" width="48%">
+</div>
 
 System Anforderungen
 --------------------
