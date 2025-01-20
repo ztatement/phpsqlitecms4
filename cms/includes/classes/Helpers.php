@@ -107,6 +107,30 @@ class Helpers
   {
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
   }
+
+  /**
+   * Hilfsfunktion: HTML-entkodieren
+   * 
+   * @param string $string
+   * @return string
+   */
+  public static function decodeHtml(string $string): string
+  {
+    return html_entity_decode($string, ENT_QUOTES, 'UTF-8');
+  }
+
+  /**
+   * Hilfsfunktion: HTML-escapen und entkodieren
+   * 
+   * @param string $string
+   * @return string
+   */
+  public static function escapeAndDecodeHtml(string $string): string
+  {
+    return htmlspecialchars(html_entity_decode($string, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8');
+  }
+
+  // ... weitere Funktionen ...
 }
 
 /**
@@ -120,6 +144,7 @@ class Helpers
  * @see change.log
  *
  * $Date$ : $Revision$ - Description
+ * 2025-01-20 : 4.5.0.2025.01.20 - added: decodeHtml und escapeAndDecodeHtml
  * 2025-01-20 : 4.5.0.2025.01.20 - added: Neue Helpers Klasse
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * Local variables:
