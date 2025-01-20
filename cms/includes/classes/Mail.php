@@ -18,8 +18,6 @@
  * @package phpSQLiteCMS v4
  */
 
-namespace cms\includes\classes;
-
 class Mail {
 
   // Konstanten für Header-Trennzeichen und Transfer-Codierung
