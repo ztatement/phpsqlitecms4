@@ -106,13 +106,14 @@ class Gallery {
       # $this->photos[$i]['subtitle'] = htmlspecialchars($photo_data['subtitle']);
       # $this->photos[$i]['description'] = htmlspecialchars($photo_data['description']);
       $this->photos[$i] = [
-          'id' => $photo_data['id'],
-          'photo_thumbnail' => $photo_data['photo_thumbnail'],
-          'photo_normal' => $photo_data['photo_normal'],
-          'title' => htmlspecialchars(html_entity_decode($photo_data['title']), ENT_QUOTES, 'UTF-8'),
-          'subtitle' => htmlspecialchars(html_entity_decode($photo_data['subtitle']), ENT_QUOTES, 'UTF-8'),
-          'description' => htmlspecialchars(html_entity_decode($photo_data['description']), ENT_QUOTES, 'UTF-8')
+        'id' => $photo_data['id'],
+        'photo_thumbnail' => $photo_data['photo_thumbnail'],
+        'photo_normal' => $photo_data['photo_normal'],
+        'title' => Helpers::decodeAndEscapeHtml($photo_data['title']),
+        'subtitle' => Helpers::decodeAndEscapeHtml($photo_data['subtitle']),
+        'description' => Helpers::decodeAndEscapeHtml($photo_data['description'])
       ];
+
 
       // Bildabmessungen überprüfen und hinzufügen
       /*
@@ -175,6 +176,7 @@ class Gallery {
  * @see change.log
  *
  * $Date$ : $Revision$ - Description
+ * 2025-01-20 : 4.5.0.2025.01.20 - update: decodeAndEscapeHtml-Funktion verwendet
  * 2025-01-17 : 4.5.0.2025.01.16 - update: PHP 8.4+/9 Kompatibilität
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * Local variables:
