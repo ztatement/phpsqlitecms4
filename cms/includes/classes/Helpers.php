@@ -9,17 +9,23 @@
  * @link https://www.demo-seite.com/path/to/phpsqlitecms/
  * @package phpSQLiteCMS v4
  *
+ * --------
+ * Helferklasse für allgemeine Funktionen
+ * Diese Datei enthält Funktionen zur Arbeit mit verschiedenen Operationen:
+ * - Datenbankoperationen
+ * - Stringmanipulationen
+ * - Sicherheitshandhabung
  */
+
 class Helpers
 {
-
-  /**
-   * Hilfsfunktion: Seitendaten bereinigen und vorbereiten
-   *
-   * @param array $data
-   * @param array $users
-   * @return array
-   */
+ /**
+  * Hilfsfunktion: Seitendaten bereinigen und vorbereiten
+  *
+  * @param array $data
+  * @param array $users
+  * @return array
+  */
   public static function prepare_page_data(array $data, array $users): array
   {
     $cleaned_data = [];
@@ -70,12 +76,12 @@ class Helpers
     return $cleaned_data;
   }
 
-  /**
-   * Hilfsfunktion: Standardwerte für neue Seite erstellen
-   *
-   * @param array $settings
-   * @return array
-   */
+ /**
+  * Hilfsfunktion: Standardwerte für neue Seite erstellen
+  *
+  * @param array $settings
+  * @return array
+  */
   public static function create_default_page_data(array $settings): array
   {
     // Standardwerte für eine neue Seite setzen
@@ -97,37 +103,65 @@ class Helpers
     ];
   }
 
-  /**
-   * Eine Funktion zur Ausgabe von sauberem HTML
-   * 
-   * @param string $string
-   * @return string
-   */
+ /**
+  * Eine Funktion zur Ausgabe von sauberem HTML
+  * 
+  * @param string $string
+  * @return string
+  */
   public static function escapeHtml(string $string): string
   {
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
   }
 
-  /**
-   * Hilfsfunktion: HTML-entkodieren
-   * 
-   * @param string $string
-   * @return string
-   */
+ /**
+  * Hilfsfunktion: HTML-entkodieren
+  * 
+  * @param string $string
+  * @return string
+  */
   public static function decodeHtml(string $string): string
   {
     return html_entity_decode($string, ENT_QUOTES, 'UTF-8');
   }
 
-  /**
-   * Hilfsfunktion: HTML-escapen und entkodieren
-   * 
-   * @param string $string
-   * @return string
-   */
+ /**
+  * Hilfsfunktion: HTML-escapen und entkodieren
+  * 
+  * @param string $string
+  * @return string
+  */
   public static function escapeAndDecodeHtml(string $string): string
   {
     return htmlspecialchars(html_entity_decode($string, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8');
+  }
+
+ /**
+  * Bereinigt und formatiert einen Text, indem er HTML-Elemente entfernt und Zeilenumbrüche ersetzt.
+  * 
+  * @param string $text Der zu formatierende Text
+  * @return string Der bereinigte Text
+  */
+  public static function cleanText($text)
+  {
+    // Entfernt alle HTML-Tags aus dem Text
+    $cleanedText = strip_tags($text);
+
+    // Ersetzt alle vorkommenden Zeilenumbrüche mit einem Leerzeichen
+    $cleanedText = preg_replace('/\r\n|\r|\n/', ' ', $cleanedText);
+
+    return trim($cleanedText);  // Entfernt führende und nachfolgende Leerzeichen
+  }
+
+ /**
+  * Bereinigt eine URL und stellt sicher, dass sie sicher verwendet werden kann.
+  * 
+  * @param string $url Die zu bereinigende URL
+  * @return string Die bereinigte URL
+  */
+  public static function cleanUrl($url)
+  {
+    return filter_var($url, FILTER_SANITIZE_URL);
   }
 
   // ... weitere Funktionen ...
@@ -145,6 +179,7 @@ class Helpers
  *
  * $Date$ : $Revision$ - Description
  * 2025-01-20 : 4.5.0.2025.01.20 - added: decodeHtml und escapeAndDecodeHtml
+ *                                 cleanText und cleanUrl
  * 2025-01-20 : 4.5.0.2025.01.20 - added: Neue Helpers Klasse
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * Local variables:
