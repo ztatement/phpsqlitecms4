@@ -3,7 +3,7 @@
  * exception.template
  */
 ?>
-  <!-- head -->
+<!-- head -->
 <?php 
     // Sicherstellen, dass die Datei existiert, bevor sie eingebunden wird
     $header_path = BASE_PATH . 'cms/templates/head' . TPX;
