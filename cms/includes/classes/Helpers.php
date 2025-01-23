@@ -1,25 +1,75 @@
 <?php
 /**
- * phpSQLiteCMS - ein einfaches und leichtes PHP Content-Management System auf Basis von PHP und SQLite
- *
- * @author Thomas Boettcher <github[at]ztatement[dot]com>
- * @copyleft (c) 2025 ztatement
- * @version 4.5.0.2025.01.20
- * @file $Id: cms/includes/edit.inc.php 1 2025-01-20 08:10:07Z ztatement $
- * @link https://www.demo-seite.com/path/to/phpsqlitecms/
- * @package phpSQLiteCMS v4
- *
- * --------
- * Helferklasse für allgemeine Funktionen
- * Diese Datei enthält Funktionen zur Arbeit mit verschiedenen Operationen:
- * - Datenbankoperationen
- * - Stringmanipulationen
- * - Sicherheitshandhabung
- */
+  * phpSQLiteCMS - ein einfaches und leichtes PHP Content-Management System auf Basis von PHP und SQLite
+  *
+  * @author Thomas Boettcher <github[at]ztatement[dot]com>
+  * @copyleft (c) 2025 ztatement
+  * @version 4.5.0.2025.01.23
+  * @file $Id: cms/includes/classes/Helpers.php 1 2025-01-20 08:10:07Z ztatement $
+  * @link https://www.demo-seite.com/path/to/phpsqlitecms/
+  * @package phpSQLiteCMS v4
+  *
+  * --------
+  * Helferklasse für allgemeine Funktionen
+  * Diese Datei enthält Funktionen zur Arbeit mit verschiedenen Operationen:
+  * - Datenbankoperationen
+  * - Stringmanipulationen
+  * - Sicherheitshandhabung
+  */
 
 class Helpers
 {
- /**
+  #private int $timestamp;
+  #private string $format;
+  #private array $settings;
+/**
+  * Konstruktor der Klasse
+  */
+  #public function __construct () {}
+
+/**
+  * Hilfsfunktion, um einen Zeitstempel mit der gegebenen Zeitzone zu formatieren.
+  *
+  * @param int $timestamp Unix-Timestamp, der formatiert werden soll
+  * @param string $format Das Format, in dem der Zeitstempel zurückgegeben werden soll. Standard: 'RFC 2822'.
+  *                        Mögliche Formate: 'RFC 2822', 'ISO 8601', 'Klartext'.
+  * @param array $settings Ein Array mit den Benutzereinstellungen, darunter 'timezone' für die Zeitzone.
+  * @return string Das formatierte Datum als String.
+  */
+  public static function formatTimestamp($timestamp, $format = 'RFC 2822', array $settings): string
+  {
+    // Zeitzonen-Einstellung aus den Benutzereinstellungen laden
+    // Hier wird der Wert aus den globalen Einstellungen (z. B. 'UTC', 'UTC+1', etc.) geladen
+    $timezone = $settings['timezone'];
+
+    // Erzeuge ein DateTime-Objekt aus dem Unix-Timestamp
+    $datetime = new DateTime('@' . $timestamp);
+
+    // Setze die Zeitzone anhand der übergebenen Einstellungen
+    // Dies ermöglicht es, den Zeitstempel in der entsprechenden Zeitzone anzuzeigen
+    $datetime->setTimezone(new DateTimeZone($timezone)); 
+
+    // Rückgabe des formatierten Zeitstempels, basierend auf dem gewünschten Format
+    switch ($format) {
+        case 'RFC 2822':
+            // Gibt das Datum im RFC 2822 Format zurück
+            return $datetime->format(DateTime::RFC2822);
+
+        case 'ISO 8601':
+            // Gibt das Datum im ISO 8601 (ATOM) Format zurück
+            return $datetime->format(DateTime::ATOM);
+
+        case 'Klartext':
+            // Gibt das Datum im Klartext-Format zurück (z. B. '01. Januar 2025, 15:30:00')
+            return $datetime->format('d. F Y, H:i:s');
+
+        default:
+            // Wenn ein ungültiges Format übergeben wird, gibt es false zurück
+            return false;
+    }
+  }
+
+/**
   * Hilfsfunktion: Seitendaten bereinigen und vorbereiten
   *
   * @param array $data
@@ -76,7 +126,7 @@ class Helpers
     return $cleaned_data;
   }
 
- /**
+/**
   * Hilfsfunktion: Standardwerte für neue Seite erstellen
   *
   * @param array $settings
@@ -103,7 +153,7 @@ class Helpers
     ];
   }
 
- /**
+/**
   * Eine Funktion zur Ausgabe von sauberem HTML
   * 
   * @param string $string
@@ -114,7 +164,7 @@ class Helpers
     return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
   }
 
- /**
+/**
   * Hilfsfunktion: HTML-entkodieren
   * 
   * @param string $string
@@ -125,7 +175,7 @@ class Helpers
     return html_entity_decode($string, ENT_QUOTES, 'UTF-8');
   }
 
- /**
+/**
   * Hilfsfunktion: HTML-escapen und entkodieren
   * 
   * @param string $string
@@ -136,7 +186,7 @@ class Helpers
     return htmlspecialchars(html_entity_decode($string, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8');
   }
 
- /**
+/**
   * Bereinigt und formatiert einen Text, indem er HTML-Elemente entfernt und Zeilenumbrüche ersetzt.
   * 
   * @param string $text Der zu formatierende Text
@@ -153,7 +203,7 @@ class Helpers
     return trim($cleanedText);  // Entfernt führende und nachfolgende Leerzeichen
   }
 
- /**
+/**
   * Bereinigt eine URL und stellt sicher, dass sie sicher verwendet werden kann.
   * 
   * @param string $url Die zu bereinigende URL
@@ -168,23 +218,24 @@ class Helpers
 }
 
 /**
- * Änderung:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
- * @LastModified: 2025-01-20 $Date$ $LastChangedDate: 2025-01-20 08:10:07 +0100 $
- * @editor: $LastChangedBy: ztatement $
- * -------------
- * changelog:
- * @see change.log
- *
- * $Date$ : $Revision$ - Description
- * 2025-01-20 : 4.5.0.2025.01.20 - added: decodeHtml und escapeAndDecodeHtml
- *                                 cleanText und cleanUrl
- * 2025-01-20 : 4.5.0.2025.01.20 - added: Neue Helpers Klasse
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
- * Local variables:
- * tab-width: 2
- * c-basic-offset: 2
- * c-hanging-comment-ender-p: nil
- * End:
- */
+  * Änderung:
+  *
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+  * @LastModified: 2025-01-20 $Date$ $LastChangedDate: 2025-01-20 08:10:07 +0100 $
+  * @editor: $LastChangedBy: ztatement $
+  * -------------
+  * changelog:
+  * @see change.log
+  *
+  * $Date$ : $Revision$ - Description
+  * 2025-01-23 : 4.5.0.2025.01.23 - added: formatTimestamp
+  * 2025-01-20 : 4.5.0.2025.01.20 - added: decodeHtml und escapeAndDecodeHtml
+  *                                 cleanText und cleanUrl
+  * 2025-01-20 : 4.5.0.2025.01.20 - added: Neue Helpers Klasse
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
+  * Local variables:
+  * tab-width: 2
+  * c-basic-offset: 2
+  * c-hanging-comment-ender-p: nil
+  * End:
+  */
