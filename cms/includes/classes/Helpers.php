@@ -30,18 +30,24 @@ class Helpers
 /**
   * Hilfsfunktion, um einen Zeitstempel mit der gegebenen Zeitzone zu formatieren.
   *
-  * @param int $timestamp Unix-Timestamp, der formatiert werden soll
-  * @param string $format Das Format, in dem der Zeitstempel zurückgegeben werden soll. Standard: 'RFC 2822'.
-  *                        Mögliche Formate: 'RFC 2822', 'ISO 8601', 'Klartext'.
-  * @param array $settings Ein Array mit den Benutzereinstellungen, darunter 'timezone' für die Zeitzone.
-  * @return string Das formatierte Datum als String.
+  * @param int $timestamp  Der Unix-Zeitstempel
+  * @param string $format  Das gewünschte Format (z.B. 'RFC 2822', 'ISO 8601')
+  * @param array $settings  Die Einstellungen, welche auch die Zeitzone beinhalten sollten
+  * @return string|false  Formatierter Zeitstempel oder false bei einem ungültigen Format
+  * @throws Exception  Falls ein Fehler bei der Zeitzonenverarbeitung auftritt
   */
-  public static function formatTimestamp($timestamp, $format = 'RFC 2822', array $settings): string
+  #public static function formatTimestamp($timestamp, $format = 'RFC 2822', array $settings): string
+  public static function formatTimestamp(int $timestamp, array $settings, string $format = 'RFC 2822') : string|false
   {
     // Zeitzonen-Einstellung aus den Benutzereinstellungen laden
+    #$timezone = $settings['timezone'];
+    if (!isset($settings['timezone']))
+    {
+      throw new Exception('Zeitzone ist nicht gesetzt in den Einstellungen.');
+    }
+
     // Hier wird der Wert aus den globalen Einstellungen (z. B. 'UTC', 'UTC+1', etc.) geladen
     $timezone = $settings['timezone'];
-
     // Erzeuge ein DateTime-Objekt aus dem Unix-Timestamp
     $datetime = new DateTime('@' . $timestamp);
 
@@ -129,8 +135,8 @@ class Helpers
 /**
   * Hilfsfunktion: Standardwerte für neue Seite erstellen
   *
-  * @param array $settings
-  * @return array
+  * @param array $settings  Einstellungen, z.B. Standard-Template
+  * @return array  Standardwert-Array für die Seite
   */
   public static function create_default_page_data(array $settings): array
   {
@@ -144,9 +150,9 @@ class Helpers
       'include_rss' => 0,
       'include_sitemap' => 0,
       'include_news' => 0,
-      'link_name' => Localization::$lang['teaser_default_linkname'],
-      'template' => $settings['default_template'],
-      'menu_1' => $settings['default_menu'],
+      'link_name' => Localization::$lang['teaser_default_linkname'] ?? 'teaser_default_linkname',
+      'template' => $settings['default_template'] ?? 'default_template',
+      'menu_1' => $settings['default_menu'] ?? 'default_menu',
       'edit_permission_general' => 0,
       'status' => 2
       // ... weitere Standardwerte analog ...
@@ -154,7 +160,7 @@ class Helpers
   }
 
 /**
-  * Eine Funktion zur Ausgabe von sauberem HTML
+  * Hilfsfunktion: zur Ausgabe von sauberem HTML
   * 
   * @param string $string
   * @return string
@@ -187,7 +193,7 @@ class Helpers
   }
 
 /**
-  * Bereinigt und formatiert einen Text, indem er HTML-Elemente entfernt und Zeilenumbrüche ersetzt.
+  * Hilfsfunktion: Bereinigt und formatiert einen Text, indem er HTML-Elemente entfernt und Zeilenumbrüche ersetzt.
   * 
   * @param string $text Der zu formatierende Text
   * @return string Der bereinigte Text
@@ -204,7 +210,7 @@ class Helpers
   }
 
 /**
-  * Bereinigt eine URL und stellt sicher, dass sie sicher verwendet werden kann.
+  * Hilfsfunktion: Bereinigt eine URL und stellt sicher, dass sie sicher verwendet werden kann.
   * 
   * @param string $url Die zu bereinigende URL
   * @return string Die bereinigte URL
@@ -228,7 +234,7 @@ class Helpers
   * @see change.log
   *
   * $Date$ : $Revision$ - Description
-  * 2025-01-23 : 4.5.0.2025.01.23 - added: formatTimestamp
+  * 2025-01-23 : 4.5.0.2025.01.23 - added: formatTimestamp kleine korrekturen
   * 2025-01-20 : 4.5.0.2025.01.20 - added: decodeHtml und escapeAndDecodeHtml
   *                                 cleanText und cleanUrl
   * 2025-01-20 : 4.5.0.2025.01.20 - added: Neue Helpers Klasse
