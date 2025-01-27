@@ -74,6 +74,48 @@ class Functions
     return $settings;
   }
 
+/**
+  * Ermittelt das Protokoll einer URL oder gibt das Standardprotokoll basierend auf der Serverkonfiguration zurück.
+  *
+  * Diese Funktion prüft, ob eine URL ein gültiges Protokoll enthält (z.B. `http://`, `https://`, `ftp://`, etc.).
+  * Falls die URL kein Protokoll enthält, wird automatisch `http://` vorangestellt.
+  * Wenn keine URL übergeben wird, ermittelt die Funktion das Protokoll basierend auf den aktuellen Servereinstellungen
+  * und gibt entweder `http://` oder `https://` zurück, je nachdem, ob die Verbindung sicher ist.
+  *
+  * Beispielaufrufe:
+  * - `get_protocol()` ohne Parameter: Gibt das Protokoll basierend auf der aktuellen Serverumgebung zurück.
+  * - `get_protocol('www.demo-seite.com')`: Prüft, ob die URL bereits ein Protokoll hat. Falls nicht, wird `http://` hinzugefügt.
+  *
+  * @param string $url  Die URL, deren Protokoll überprüft werden soll. (Optional)
+  *                     Falls keine URL übergeben wird, wird das Protokoll basierend auf der Serverkonfiguration ermittelt.
+  * @return string  Das vollständige Protokoll für die angegebene URL oder das Standardprotokoll für die aktuelle Serverumgebung.
+  */
+  public static function get_protocol(string $url = ''): string
+  {
+    // Falls keine URL übergeben wird, ermitteln wir das Protokoll für die aktuelle Seite
+    if (empty($url))
+    {
+      return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
+          || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') 
+          ? 'https://' 
+          : 'http://';
+    }
+
+    // Überprüfen, ob die übergebene URL bereits ein Protokoll enthält
+    if (mb_substr($url, 0, 7, CHARSET) != 'http://' && 
+        mb_substr($url, 0, 8, CHARSET) != 'https://' && 
+        mb_substr($url, 0, 6, CHARSET) != 'ftp://' && 
+        mb_substr($url, 0, 7, CHARSET) != 'sftp://' && 
+        mb_substr($url, 0, 9, CHARSET) != 'gopher://' && 
+        mb_substr($url, 0, 7, CHARSET) != 'news://') 
+    {
+      // Wenn kein Protokoll vorhanden ist, fügen wir 'http://' hinzu
+      $url = 'http://' . $url;
+    }
+
+    // Rückgabe der (gegebenen oder modifizierten) URL
+    return $url;
+  }
 
   #function get_base_url(string $cut = false): string
   public static function get_base_url(string $cut = ''): string
@@ -284,6 +326,67 @@ class Functions
         return false;
   }
 
+/**
+  * Holt die Menüs aus der Datenbank.
+  * 
+  * @return array|false Gibt ein assoziatives Array der Menüs zurück oder false, wenn keine Menüs gefunden wurden.
+  */
+  public function get_menus()
+  {
+    // Das Array, das die Menüs enthalten wird
+    $menus = [];
+
+    // Holen des Protokolls mit der erweiterten get_protocol-Methode
+    $funktions = new Functions();
+    $protocol = $funktions::get_protocol();  // Hier holen wir das Protokoll, falls URL nicht angegeben ist
+
+    // Verbindung zur Datenbank und Ausführen der SQL-Abfrage
+    $menu_query = Database::$content->query("
+      SELECT 
+        id, menu, name, title, link, section, accesskey 
+      FROM " . Database::$db_settings['menu_table'] . " 
+      ORDER BY menu ASC, sequence ASC
+    ");
+
+    // Überprüfen, ob die Abfrage erfolgreich war und Daten enthält
+    if ($menu_query !== false)
+    {
+      // Iteriere durch die zurückgegebenen Menüeinträge und baue das Menü-Array auf
+      $i = 0;
+      while ($row = $menu_query->fetch())
+      {
+        // Initialisierung, wenn das Menü noch nicht im Array vorhanden ist
+        if (!isset($menus[$row['menu']]))
+        {
+          $menus[$row['menu']] = [];
+        }
+
+        // Menüeintrag hinzufügen
+        $menus[$row['menu']][$i]['name'] = $row['name'];
+        $menus[$row['menu']][$i]['title'] = $row['title'];
+
+        // Überprüfen, ob der Link mit einem externen Protokoll beginnt
+        // Falls nicht, fügen wir das richtige Protokoll hinzu
+        $menus[$row['menu']][$i]['link'] = $protocol . ($row['link']);
+
+        // Zusätzliche Menüinformationen (z.B. Section und Accesskey) hinzufügen
+        $menus[$row['menu']][$i]['section'] = $row['section'];
+        $menus[$row['menu']][$i]['accesskey'] = $row['accesskey'];
+
+        // Zähler für die nächste Menüzeile erhöhen
+        $i++;
+      }
+    }
+
+    // Rückgabe der Menüs, wenn welche vorhanden sind, ansonsten `false`
+    if (!empty($menus))
+    {
+      return $menus;
+    }
+
+    return false;
+  }
+
 }
 
 
@@ -291,15 +394,16 @@ class Functions
   * Änderung:
   *
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
-  * @LastModified: 2025-01-23 $Date$ 
-  * @date $LastChangedDate: 2025-01-26 17:05:56 +0100 $
+  * @LastModified: 2025-01-27 $Date$ 
+  * @date $LastChangedDate: 2025-01-27 10:27:13 +0100 $
   * @editor: $LastChangedBy: ztatement $
   * -------------
   * changelog:
   * @see change.log
   *
   * $Date$     : $Revision$          : $LastChangedBy$  - Description
-  * 2025-01-26 : 4.5.0.2025.01.26    : ztatement        - added: get_breadcrumbs
+  * 2025-01-27 : 4.5.0.2025.01.27    : ztatement        - added: get_protocol
+  * 2025-01-26 : 4.5.0.2025.01.26    : ztatement        - added: get_breadcrumbs, get_menus
   * 2025-01-23 : 4.5.0.2025.01.23    : ztatement        - neu angelegt
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
   * Local variables:
