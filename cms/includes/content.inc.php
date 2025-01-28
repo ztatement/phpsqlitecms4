@@ -4,24 +4,30 @@
  *
  * @author Mark Hoschek < mail at mark-hoschek dot de >
  * @copyright (c) 2014 Mark Hoschek
+ * 
  * @version last 3.2015.04.02.18.42
  * @link http://phpsqlitecms.net/
  * @package phpSQLiteCMS
  *         
+ * 
+ * @modified by
  * @author Thomas Boettcher <github[at]ztatement[dot]com>
  * @copyleft (c) 2025 ztatement
- * @version 4.5.0.2025.01.16 $Id: cms/includes/content.inc.php 1 2025-01-16 17:52:24Z ztatement $
+ * 
+ * @version 4.5.0.2025.01.28 
+ * @file $Id: cms/includes/content.inc.php 1 2025-01-16 17:52:24Z ztatement $
  * @link https://www.demo-seite.com/path/to/phpsqlitecms/
  * @package phpSQLiteCMS v4
- *         
+ * 
  */
-if (!defined('IN_INDEX'))
+if (! defined('IN_INDEX'))
 {
   exit(); // Sicherheitsabbruch, wenn der Script-Aufruf nicht korrekt ist.
 }
 
+$functions = new Functions();
 // Menüs laden
-$template->assign('menus', get_menus());
+$template->assign('menus', $functions->get_menus());
 
 // Globale Content-Blöcke
 if ($settings['global_content_blocks'])
@@ -32,24 +38,25 @@ if ($settings['global_content_blocks'])
 // Hauptinhalt
 if (empty($data)) // könnte bereits gesetzt sein, wenn eine Fehlerseite geladen wurde
 {
-  if ($data = get_content(PAGE))
+  if ($data = $functions->get_content(PAGE))
   {
     // Views zählen:
     if ($settings['count_views'] == 1)
     {
-      $dbr = Database::$content->prepare("
+      $stmt = Database::$content->prepare("
         UPDATE " . Database::$db_settings['pages_table'] . " 
-        SET views=views+1 
+          SET views=views+1 
         WHERE id=:id
       ");
-      $dbr->bindParam(':id', $data['id'], PDO::PARAM_INT);
-      $dbr->execute();
+
+      $stmt->bindParam(':id', $data['id'], PDO::PARAM_INT);
+      $stmt->execute();
     }
   }
   else
   {
     $no_cache = true;
-    if ($data = get_content($settings['error_page']))
+    if ($data = $functions->get_content($settings['error_page']))
     {
       header($_SERVER['SERVER_PROTOCOL'] . " 404 Not Found");
       header("Status: 404 Not Found");
@@ -66,12 +73,13 @@ if (empty($data)) // könnte bereits gesetzt sein, wenn eine Fehlerseite geladen
 # $language_file = $settings['default_page_language'] . '.lang.php';
 # else
 # $language_file = $data['language'] . '.page.lang.php';
-$language_file = $data['language'] ? $data['language'] . '.page.lang.php' : $settings['default_page_language'] . '.lang.php';
+$language_file = $data['language'] ? $data['language'] . '.lang.php' : $settings['default_page_language'] . '.lang.php';
 
 // Lade die Seiten-Sprachdatei
 # require('./cms/includes/classes/Localization.class.php');
 # $loc = new Localization('./cms/lang/' . $language_file);
-$localization = new Localization(BASE_PATH . 'cms/lang/' . $language_file);
+$localization = new Localization(
+  BASE_PATH . LANGUAGE . $language_file);
 # $localization = Localization::getInstance(BASE_PATH . 'cms/lang/' . $language_file);
 # $localization->load(BASE_PATH . 'cms/lang/' . $language_file);
 
@@ -86,12 +94,12 @@ mb_internal_encoding(Localization::$lang['charset']);
 # $lang = $template->get_config_vars();
 setlocale(LC_ALL, Localization::$lang['locale']);
 # $template->assign('config_file', $language_file);
-define('CHARSET', Localization::$lang['charset']); // Charset festlegen
-                                                   # define('TIME_FORMAT', Localization::$lang['time_format']);
-                                                   # define('TIME_FORMAT_FULL', Localization::$lang['time_format_full']);
+###define('CHARSET', Localization::$lang['charset']); // Charset festlegen
+# define('TIME_FORMAT', Localization::$lang['time_format']);
+# define('TIME_FORMAT_FULL', Localization::$lang['time_format_full']);
 
 // Breadcrumbs
-$template->assign('breadcrumbs', get_breadcrumbs($data['breadcrumbs']));
+$template->assign('breadcrumbs', $functions->get_breadcrumbs($data['breadcrumbs']));
 
 $page = $data['page'];
 $content = $data['content'];
@@ -124,9 +132,7 @@ $content = parse_special_tags($content);
 # if ($sidebar_3 != '')
 # $sidebar_3 = parse_special_tags($sidebar_3);
 $sidebars = [
-    'sidebar_1',
-    'sidebar_2',
-    'sidebar_3'
+  'sidebar_1','sidebar_2','sidebar_3'
 ];
 foreach ($sidebars as $sidebar)
 {
@@ -212,9 +218,7 @@ if ($data['include_news'])
       # $include_news[$i]['time'] = $include_news_data['time'];
       # $include_news[$i]['linkname'] = $include_news_data['linkname'];
       $include_news[$i] = [
-          'id' => $include_news_data['id'],
-          'time' => $include_news_data['time'],
-          'linkname' => $include_news_data['linkname']
+        'id' => $include_news_data['id'],'time' => $include_news_data['time'],'linkname' => $include_news_data['linkname']
       ];
       $localization->bindReplacePlaceholder($include_news_data['id'], 'time', $include_news_data['time'], 'include_news_time', Localization::FORMAT_TIME);
 
@@ -258,7 +262,7 @@ if ($data['include_news'])
         $include_news[$i]['link'] = BASE_URL . $include_news_data['page'];
       }
 
-      $i++;
+      $i ++;
     }
     if (isset($include_news))
     {
@@ -374,13 +378,15 @@ else
  * unnötige if-Bedingungen für Standardwerte (wurde für keywords, description usw. angewendet).
  * 
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
- * @LastModified: 2025-01-16 $Date$ $LastChangedDate: 2025-01-16 17:52:24 +0100 $
+ * @LastModified: 2025-01-28 
+ * @date $ $LastChangedDate: 2025-01-18 18:45:13 +0100 $
  * @editor: $LastChangedBy: ztatement $
  * -------------
  * changelog:
  * @see change.log
  *
  * $Date$ : $Revision$ - Description
+ * 2025-01-28 : 4.5.0.2025.01.28 - update: verwendet jetzt Functions Klasse
  * 2025-01-16 : 4.5.0.2025.01.16 - update: PHP 8.x/9 Kompatibilität
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * Local variables:
