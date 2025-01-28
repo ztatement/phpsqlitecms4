@@ -15,7 +15,7 @@
  * @author Thomas Boettcher <github[at]ztatement[dot]com>
  * @copyleft (c) 2025 ztatement
  *
- * @version 4.5.0.2025.01.08 
+ * @version 4.5.0.2025.01.28 
  * @file $Id: cms/includes/classes/Localization.php 1 2012-12-16 02:46:16Z ztatement $
  * @link https://www.demo-seite.com/path/to/phpsqlitecms/
  * @package phpSQLiteCMS v4
@@ -60,6 +60,102 @@ class Localization {
       throw new Exception(
         'No language file specified!');
     }
+  }
+
+  /**
+   * Gibt eine Liste der verfügbaren Sprachen zurück.
+   *
+   * Diese Funktion durchsucht den Ordner für Sprachdateien und gibt die verfügbaren
+   * Sprachen in einem detaillierten Format zurück.
+   *
+   * @param bool $admin  Gibt an, ob die Sprachdateien für das Admin-Panel oder die öffentliche Seite geladen werden sollen.
+   *
+   * @return array|false  Ein Array der verfügbaren Sprachen im Detailformat oder `false`, wenn keine Sprachen gefunden wurden.
+   */
+  public function get_languages (bool $admin = false)
+  {
+    // Definiert das Dateischema, je nachdem ob für Admin oder öffentliche Seite
+    $file_schema = $admin ? '.admin.lang.php' : '.lang.php';
+    $length = 0 - strlen($file_schema);
+    $languages = [];
+
+    // Durchläuft alle Dateien im Sprachverzeichnis, die dem Schema entsprechen
+    foreach (glob(BASE_PATH . 'cms/lang/*' . $file_schema) as $filename)
+    {
+      $languages[] = substr(basename($filename), 0, $length); // Dateiname ohne Erweiterung ".[admin|page].lang.php"
+    }
+
+    // Wenn Sprachen gefunden wurden, sortiere sie und gebe die Details zurück
+    if (! empty($languages))
+    {
+      natcasesort($languages);
+      $languages_detailed = [];
+      foreach ($languages as $i => $language)
+      {
+        $languages_detailed[$i]['identifier'] = $language;
+        $languages_detailed[$i]['name'] = $this->get_language_name($language); // Sprachname holen
+      }
+      return $languages_detailed;
+    }
+
+    return false; // Keine Sprachen gefunden
+  }
+
+  /**
+   * Hilfsfunktion zur Formatierung eines Sprachstrings in ein lesbares Format.
+   *
+   * Diese Funktion formatiert einen Sprachcode im Format 'en_US' zu einem lesbaren
+   * Namen, z.B. 'Englisch (US)' oder 'Deutsch' für den String 'de'.
+   *
+   * @param string $string Der Sprachcode im Format 'en_US' oder nur 'de'.
+   *
+   * @return string Der formatierte Sprachname.
+   */
+  public function get_language_name (string $string): string
+  {
+    if (empty($string))
+    {
+      return 'Unbekannte Sprache'; // Standardwert, falls der Eingabestring leer ist
+    }
+
+    $string_parts = explode('_', $string);
+
+    if (isset($string_parts[1]))
+    {
+      $name = ucfirst($string_parts[0]) . ' (' . strtoupper($string_parts[1]) . ')';
+    }
+    else
+    {
+      $name = ucfirst($string_parts[0]);
+    }
+
+    return $name;
+  }
+
+  /**
+   * Übersetzt einen gegebenen Schlüssel in der angegebenen Sprache.
+   *
+   * Diese Funktion prüft, ob ein Schlüssel für die angegebene Sprache vorhanden ist,
+   * und gibt den entsprechenden übersetzten Text zurück. Falls der Schlüssel nicht
+   * existiert, wird der Schlüssel selbst zurückgegeben.
+   *
+   * @param string $key Der Übersetzungsschlüssel.
+   * @param string $language Die gewünschte Sprache.
+   *
+   * @return string Der übersetzte Text oder der Schlüssel, wenn keine Übersetzung gefunden wurde.
+   */
+  public function translate (string $key, string $language): string
+  {
+    global $lang; // Zugriff auf das $lang-Array
+
+    // Prüfen, ob der Key für die angegebene Sprache existiert
+    if (isset($lang[$language][$key]))
+    {
+      return htmlspecialchars($lang[$language][$key], ENT_QUOTES, 'UTF-8');
+    }
+
+    // Falls der Key nicht existiert, gib den Key selbst zurück
+    return htmlspecialchars($key, ENT_QUOTES, 'UTF-8');
   }
 
   /**
@@ -248,6 +344,23 @@ class Localization {
   {
     return date($tformat, $timestamp);
   }
+
+  /**
+   * Extrahiert den Sprachcode aus einem Dateinamen.
+   *
+   * Diese Hilfsfunktion extrahiert den Sprachcode aus einem Dateinamen im Format 'chinese_zh-CN'
+   * und gibt den Code 'zh-CN' zurück.
+   *
+   * @param string $filename Der Dateiname, aus dem der Sprachcode extrahiert werden soll.
+   *
+   * @return string Der extrahierte Sprachcode.
+   */
+  public function extract_language_code_from_filename (string $filename): string
+  {
+    // Den Dateinamen an Unterstrichen trennen und den letzten Teil zurückgeben
+    $parts = explode('_', $filename);
+    return end($parts); // Gibt den Sprachcode zurück (z.B. 'zh-CN')
+  }
 }
 
 /**
@@ -256,17 +369,18 @@ class Localization {
  * require_once statt require: Verhindert mehrfaches Einbinden der gleichen Datei.
  * Jede Methode wurde kommentiert, um die Funktionalität zu erklären.
  * Verwendung von [$this, '_callbackFormatTimeWrapper']: Um sicherzustellen, dass der Funktionsaufruf korrekt funktioniert.
+ * empty($etwas) statt isset($etwas) verwendet.
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
- * @LastModified: 2025-01-08 $Date$
- * @date $LastChangedDate: 2025-01-28 14:14:01 +0100 $
+ * @LastModified: 2025-01-28 $Date$
+ * @date $LastChangedDate: 2025-01-28 16:51:27 +0100 $
  * @editor: $LastChangedBy: ztatement $
  * -------------
  * changelog:
  * @see change.log
  *
  * $Date$     : $Revision$          : $LastChangedBy$  - Description
- * 2025-01-28 : 4.5.0.2025.01.28    : ztatement        - 
+ * 2025-01-28 : 4.5.0.2025.01.28    : ztatement        - added: Erweitert um get_languages, _name, translate
  * 2025-01-08 : 4.5.0.2025.01.08    : ztatement        - update: PHP 8.x/9 Kompatibilität
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * Local variables:
