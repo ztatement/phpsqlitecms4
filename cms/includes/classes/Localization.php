@@ -31,6 +31,12 @@ class Localization {
 
   private static $_lang;
 
+  private static $language_file;
+
+  private static $language_code;
+
+  private static $locale_variants = [];
+
   private $replacement;
 
   /**
@@ -44,6 +50,11 @@ class Localization {
   {
     // Instanz wird gespeichert
     self::$_instance = $this;
+
+    #$language_code = '';
+    #$locale_variants = [];
+    // Hole die passende Sprachdatei
+    $language_file = $language_file;
 
     // Überprüfen, ob eine Sprachdatei angegeben wurde
     if ($language_file)
@@ -60,6 +71,55 @@ class Localization {
       throw new Exception(
         'No language file specified!');
     }
+  }
+
+  public static function check_language_variants ($language_code, $locale_variants)
+  {
+    // Wenn der übergebene Sprachcode nicht in den Varianten gefunden wird
+    if (! isset($locale_variants[$language_code]))
+    {
+
+      $settings = [];
+      if (! isset($settings['default_page_language']))
+      {
+
+        // Wenn keine Standardeinstellung existiert, gib den Standardwert zurück
+        return $settings['default_page_language'];
+      }
+
+      // Mögliche Varianten zum Durchsuchen (direkt in der Funktion definieren)
+      $locale_variants = [
+        'german' => [
+          'german','de_DE.utf8','de-DE','de_DE@euro','de','deu'
+        ],'english' => [
+          'english','en_US.utf8','en-US','en','eng'
+        ],'chinese' => [
+          'chinese','zh_CN.utf8','zh_CN','zh','cn'
+        ]
+      ];
+
+      // Gehe durch die Varianten
+      foreach ($locale_variants as $language => $variants)
+      {
+        foreach ($variants as $variant)
+        {
+          // Erstelle den Dateinamen basierend auf der Variante
+          $language_file = str_replace($language_code, $variant, $language_code) . '.lang.php';
+
+          // Überprüfe, ob die Datei existiert
+          if (file_exists(LANGUAGE_PATH . $language_file))
+          {
+            // Wenn die Datei gefunden wird, gib den Dateinamen zurück
+            return $language_file;
+          }
+        }
+      }
+      // Falls keine passende Sprachdatei gefunden wurde, gib die Standard-Englisch-Variante zurück
+      return 'english_en-US.lang.php'; // Du könntest auch ein anderes Standardverhalten hier definieren
+    }
+
+    // Wenn der Sprachcode bereits existiert, gib ihn einfach zurück
+    return $language_code . '.lang.php';
   }
 
   /**
@@ -80,13 +140,14 @@ class Localization {
     $languages = [];
 
     // Durchläuft alle Dateien im Sprachverzeichnis, die dem Schema entsprechen
-    foreach (glob(BASE_PATH . 'cms/lang/*' . $file_schema) as $filename)
+    foreach (glob(BASE_PATH . LANGUAGE . '/*' . $file_schema) as $filename)
     {
       $languages[] = substr(basename($filename), 0, $length); // Dateiname ohne Erweiterung ".[admin|page].lang.php"
     }
 
     // Wenn Sprachen gefunden wurden, sortiere sie und gebe die Details zurück
-    if (! empty($languages))
+    #if (! empty($languages))
+    if (count($languages) > 0)
     {
       natcasesort($languages);
       $languages_detailed = [];
@@ -98,7 +159,7 @@ class Localization {
       return $languages_detailed;
     }
 
-    return false; // Keine Sprachen gefunden
+    return []; // Keine Sprachen gefunden
   }
 
   /**
@@ -107,9 +168,9 @@ class Localization {
    * Diese Funktion formatiert einen Sprachcode im Format 'en_US' zu einem lesbaren
    * Namen, z.B. 'Englisch (US)' oder 'Deutsch' für den String 'de'.
    *
-   * @param string $string Der Sprachcode im Format 'en_US' oder nur 'de'.
+   * @param string $string  Der Sprachcode im Format 'en_US' oder nur 'de'.
    *
-   * @return string Der formatierte Sprachname.
+   * @return string  Der formatierte Sprachname.
    */
   public function get_language_name (string $string): string
   {
@@ -139,10 +200,10 @@ class Localization {
    * und gibt den entsprechenden übersetzten Text zurück. Falls der Schlüssel nicht
    * existiert, wird der Schlüssel selbst zurückgegeben.
    *
-   * @param string $key Der Übersetzungsschlüssel.
-   * @param string $language Die gewünschte Sprache.
+   * @param string $key  Der Übersetzungsschlüssel.
+   * @param string $language  Die gewünschte Sprache.
    *
-   * @return string Der übersetzte Text oder der Schlüssel, wenn keine Übersetzung gefunden wurde.
+   * @return string  Der übersetzte Text oder der Schlüssel, wenn keine Übersetzung gefunden wurde.
    */
   public function translate (string $key, string $language): string
   {
@@ -151,11 +212,11 @@ class Localization {
     // Prüfen, ob der Key für die angegebene Sprache existiert
     if (isset($lang[$language][$key]))
     {
-      return htmlspecialchars($lang[$language][$key], ENT_QUOTES, 'UTF-8');
+      return Helpers::escapeAndDecodeHtml($lang[$language][$key]);
     }
 
-    // Falls der Key nicht existiert, gib den Key selbst zurück
-    return htmlspecialchars($key, ENT_QUOTES, 'UTF-8');
+    // Falls der Sprachen Schlüssel nicht existiert, gib den Key selbst zurück
+    return Helpers::escapeHtml($key);
   }
 
   /**
@@ -373,7 +434,7 @@ class Localization {
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
  * @LastModified: 2025-01-28 $Date$
- * @date $LastChangedDate: 2025-01-28 16:51:27 +0100 $
+ * @date $LastChangedDate: 2025-01-28 17:48:31 +0100 $
  * @editor: $LastChangedBy: ztatement $
  * -------------
  * changelog:
