@@ -4,7 +4,7 @@
   *
   * @author Thomas Boettcher <github[at]ztatement[dot]com>
   * @copyleft (c) 2025 ztatement
-  * @version 4.5.0.2025.01.26
+  * @version 4.5.0.2025.02.03
   * @file $Id: cms/includes/classes/Functions.php 1 2025-01-23 18:07:39Z ztatement $
   * @link https://www.demo-seite.com/path/to/phpsqlitecms/
   * @package phpSQLiteCMS v4
@@ -35,7 +35,8 @@ class Functions
   public static function get_settings(): array
   {
     // Überprüfen, ob die Datenbankverbindung existiert
-    if (!isset(Database::$content)) {
+    if (!isset(Database::$content))
+    {
           throw new Exception('Die Datenbankverbindung wurde nicht initialisiert.');
     }
 
@@ -58,7 +59,8 @@ class Functions
       // Falls keine Ergebnisse, leeres Array zurückgeben
       if (!$settings)
       {
-        return [];
+        #return [];
+        return Helpers::initializeSettings([]);
       }
     } 
     catch (PDOException $e)
@@ -71,7 +73,9 @@ class Functions
       // Allgemeine Fehlerbehandlung
       throw new Exception("Fehler beim Abrufen der Einstellungen: " . $e->getMessage());
     }
-    return $settings;
+    #return $settings;
+    // Merging der Standardwerte mit den abgerufenen Einstellungen
+    return Helpers::initializeSettings($settings);
   }
 
 /**
@@ -117,7 +121,7 @@ class Functions
     return $url;
   }
 
-  #function get_base_url(string $cut = false): string
+
   public static function get_base_url(string $cut = ''): string
   {
     global $settings;
@@ -129,10 +133,7 @@ class Functions
     }
 
     // Protokoll ermitteln
-    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') 
-        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') 
-        ? 'https://' 
-        : 'http://';
+    $protocol = self::get_protocol();  // Aufruf der statischen Methode
 
     // Sicherstellen, dass der Host korrekt und sicher ist
     $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
@@ -184,7 +185,6 @@ class Functions
 
     return $base_path;
   }
-
 
 /**
   * Holt den Seiteninhalt aus der Datenbank und gibt ihn als Array zurück.
@@ -327,18 +327,38 @@ class Functions
   }
 
 /**
-  * Holt die Menüs aus der Datenbank.
-  * 
-  * @return array|false Gibt ein assoziatives Array der Menüs zurück oder false, wenn keine Menüs gefunden wurden.
+  * Holt die Menüdaten aus der Datenbank und gibt sie als strukturiertes Array zurück.
+  *
+  * Diese Funktion führt eine SQL-Abfrage aus, um alle Menüeinträge aus der Datenbank zu laden.
+  * Die Menüeinträge werden nach Menübezeichner (`menu`) und Reihenfolge (`sequence`) sortiert.
+  * Für jeden Menüeintrag wird ein Array mit den folgenden Informationen erstellt:
+  * - `name`: Der Name des Menüs
+  * - `title`: Der Titel des Menüs
+  * - `link`: Der Link zum Menüeintrag (wobei ein gültiges Protokoll vorangestellt wird, falls notwendig)
+  * - `section`: Die zugehörige Sektion des Menüs
+  * - `accesskey`: Der Zugangsschlüssel für den Menüeintrag
+  *
+  * Wenn ein Menüeintrag keinen externen Link (z.B. zu einer anderen Webseite) enthält,
+  * wird das Basis-URL-Protokoll automatisch vorangestellt.
+  *
+  * Diese Funktion gibt ein assoziatives Array zurück, das die Menüs nach ihrem `menu`-Schlüssel gruppiert enthält.
+  * Jeder Menüeintrag wird durch seinen Index innerhalb des jeweiligen Menüs aufgelistet.
+  *
+  * Beispielaufruf:
+  * ```php
+  * $menus = get_menus();
+  * ```
+  * Wenn Menüs vorhanden sind, wird das Array der Menüs zurückgegeben.
+  *
+  * @return array|false  Ein assoziatives Array der Menüs oder `false`, wenn keine Menüs gefunden wurden.
   */
   public function get_menus()
   {
     // Das Array, das die Menüs enthalten wird
     $menus = [];
 
-    // Holen des Protokolls mit der erweiterten get_protocol-Methode
-    $funktions = new Functions();
-    $protocol = $funktions::get_protocol();  // Hier holen wir das Protokoll, falls URL nicht angegeben ist
+    // Holen der Lokalen Adresse mit der erweiterten get_base_url-Methode
+    $local_url = self::get_base_url();
 
     // Verbindung zur Datenbank und Ausführen der SQL-Abfrage
     $menu_query = Database::$content->query("
@@ -367,7 +387,7 @@ class Functions
 
         // Überprüfen, ob der Link mit einem externen Protokoll beginnt
         // Falls nicht, fügen wir das richtige Protokoll hinzu
-        $menus[$row['menu']][$i]['link'] = $protocol . ($row['link']);
+        $menus[$row['menu']][$i]['link'] = $local_url . ($row['link']);
 
         // Zusätzliche Menüinformationen (z.B. Section und Accesskey) hinzufügen
         $menus[$row['menu']][$i]['section'] = $row['section'];
@@ -394,14 +414,15 @@ class Functions
   * Änderung:
   *
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
-  * @LastModified: 2025-01-27 $Date$ 
-  * @date $LastChangedDate: 2025-01-27 10:27:13 +0100 $
+  * @LastModified: 2025-02-03 $Date$ 
+  * @date $LastChangedDate: Monday, 03-Feb-25 13:51:46 UTC+1 $
   * @editor: $LastChangedBy: ztatement $
   * -------------
   * changelog:
   * @see change.log
   *
   * $Date$     : $Revision$          : $LastChangedBy$  - Description
+  * 2025-02-03 : 4.5.0.2025.02.03    : ztatement        - modified get_settings
   * 2025-01-27 : 4.5.0.2025.01.27    : ztatement        - added: get_protocol
   * 2025-01-26 : 4.5.0.2025.01.26    : ztatement        - added: get_breadcrumbs, get_menus
   * 2025-01-23 : 4.5.0.2025.01.23    : ztatement        - neu angelegt
