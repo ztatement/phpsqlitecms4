@@ -28,124 +28,6 @@ class Helpers
   #public function __construct () {}
 
 /**
-  * Initialisiert die Einstellungen mit Standardwerten und kombiniert diese mit den tatsächlichen, 
-  * aus der Datenbank abgerufenen Einstellungen.
-  * 
-  * Diese Methode stellt sicher, dass alle erforderlichen Einstellungen vorhanden sind, indem sie
-  * die abgerufenen Daten mit vordefinierten Standardwerten zusammenführt. Sollte ein bestimmter 
-  * Einstellungseintrag in der Datenbank fehlen, wird der Standardwert verwendet. 
-  * 
-  * Die Funktion nutzt die `array_merge`-Methode, um die Standardwerte und die tatsächlichen 
-  * Einstellungen zu kombinieren. Dabei werden die abgerufenen Werte aus der Datenbank die 
-  * Standardwerte überschreiben, falls diese vorhanden sind.
-  * 
-  * @param array $settings  Die aus der Datenbank abgerufenen Einstellungen, die mit den Standardwerten kombiniert werden sollen.
-  * 
-  * @return array  Ein Array, das alle kombinierten Einstellungen enthält. 
-  *                Dies umfasst sowohl die abgerufenen Einstellungen als auch die Standardwerte 
-  *                für nicht vorhandene oder leere Einträge.
-  * 
-  * Beispiel:
-  * ```php
-  * $settings = Helpers::initializeSettings($databaseSettings);
-  * // Gibt z.B. ['count_views' => 10, 'error_page' => '/error.html', 'content_auto_link' => false] zurück,
-  * // falls $databaseSettings nur für 'count_views' und 'error_page' Werte enthält.
-  * ```
-  */
-  public static function initializeSettings($settings)
-  {
-    // Standardwerte für die Einstellungen
-    $definedSettings = [
-      'index_page'                      => 'home',
-      'error_page'                      => '404',
-      'comment_order'                   => '0',
-      'comments_per_page'               => '10',
-      'default_page_language'           => 'english_en-US',
-      'website_title'                   => 'phpSQLiteCMS',
-      'website_footnote_1'              => '',
-      'website_footnote_2'              => '',
-      'news_per_page'                   => '10',
-      'email'                           => '',
-      'comment_notification'            => '0',
-      'comment_maxlength'               => '1000',
-      'word_maxlength'                  => '30',
-      'name_maxlength'                  => '50',
-      'email_hp_maxlength'              => '100',
-      'default_image_class'             => 'img-fluid',
-      'default_thumbnail_class'         => 'img-thumbnail',
-      'default_gallery_image_class'     => 'thumbnail',
-      'image_classes'                   => 'float-start, float-end, thumbnail, rounded, img-fluid, img-thumbnail',
-      'photos_commentable'              => '0',
-      'count_views'                     => '0',
-      'default_template'                => 'default.template.php',
-      'default_photo_template'          => 'photo.template.php',
-      'default_slideshow_template'      => 'slideshow.template.php',
-      'location_maxlength'              => '50',
-      'admin_entries_per_page'          => '20',
-      'resize'                          => '1024',
-      'resize_xy'                       => 'x',
-      'compression'                     => '80',
-      'session_prefix'                  => 'zcms_',
-      'default_menu'                    => 'main_menu',
-      'smiley_directory'                => 'assets/media/smilies',
-      'comment_smilies'                 => '1',
-      'comment_auto_link'               => '1',
-      'content_smilies'                 => '0',
-      'content_auto_link'               => '0',
-      'default_description'             => '',
-      'default_keywords'                => '',
-      'akismet_key'                     => '',
-      'rss_maximum_items'               => '20',
-      'search_results_per_page'         => '20',
-      'counter_last_resetted'           => '1738548145', // sollte unbedingt vor Start der Webseite angepasst werden. Mon Feb 03 2025 03:02:25 GMT+0100
-      'notes_per_page'                  => '10',
-      'entries_show_email'              => '0',
-      'mail_parameter'                  => '',
-      'base_url'                        => '',
-      'default_photos_per_row'          => '4',
-      'version'                         => '4.5.0', // sollte unbedingt vor Start der Webseite angepasst werden.
-      'caching'                         => '0',
-      'breadcrumbs'                     => '5',
-      'slideshow'                       => '0',
-      'content_function'                => '0',
-      'base_path'                       => '',
-      'admin_language'                  => 'english_en-US',
-      'time_zone'                       => 'Berlin/Germany',
-      'timezone'                        => 'UTC+1',
-      'default_formatting'              => '',
-      'akismet_entry_check'             => '0',
-      'akismet_mail_check'              => '0',
-      'prevent_repeated_posts_minutes'  => '2',
-      'comment_remove_blank_lines'      => '1',
-      'admin_auto_clear_cache'          => '1',
-      'check_access_permission'         => '0',
-      'global_content_blocks'           => '1',
-      'readonly'                        => '9',
-      'lightbox_enabled'                => '1',
-      'pingbacks_enabled'               => '0',
-      'wysiwyg_editor'                  => '0',
-      'simple_news_per_page'            => '10',
-      'email_text_maxlength'            => '10000',
-      'email_subject_maxlength'         => '100',
-      'author'                          => '',
-      'thumbnail_resize_xy'             => 'x',
-      'thumbnail_resize'                => '180',
-      'thumbnail_compression'           => '65',
-      'thumbnail_prefix'                => '',
-      'thumbnail_postfix'               => '_thumbnail',
-      'theme'                           => 'default',
-      'font'                            => 'z-IconPro-Light' // default Schriftart im phpSQLiteCMS
-
-      // Weitere Standardwerte können hier hinzugefügt werden
-    ];
-
-    // Merging der abgerufenen Einstellungen mit den Standardwerten
-    // Die abgerufenen Werte überschreiben die Standardwerte, wenn sie vorhanden sind
-    return array_merge($definedSettings, $settings);
-  }
-
-
-/**
   * Hilfsfunktion, um einen Zeitstempel mit der gegebenen Zeitzone zu formatieren.
   *
   * @param int $timestamp  Der Unix-Zeitstempel
@@ -455,18 +337,18 @@ class Helpers
   * Änderung:
   *
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
-  * @LastModified: 2025-02-03 
-  * @date $LastChangedDate: Monday, 03-Feb-25 13:48:56 UTC+1 $
+  * @LastModified: 2025-01-29 
+  * @date $LastChangedDate: 2025-01-29 15:28:22 +0100 $
   * @editor: $LastChangedBy: ztatement $
   * -------------
+  * changelog:
   * @see change.log
   *
   * $Date$     : $Revision$          : $LastChangedBy$  - Description
-  * 2025-02-03 : 4.5.0.2025.02.03    : ztatement        - added: initializeSettings
   * 2025-01-29 : 4.5.0.2025.01.29    : ztatement        - added: get_time_format
   * 2025-01-23 : 4.5.0.2025.01.23    : ztatement        - added: formatTimestamp kleine korrekturen
   * 2025-01-20 : 4.5.0.2025.01.20    : ztatement        - added: decodeHtml und escapeAndDecodeHtml
-  *                                                       cleanText und cleanUrl
+  *                                    cleanText und cleanUrl
   * 2025-01-20 : 4.5.0.2025.01.20    : ztatement        - added: Neue Helpers Klasse
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
   * Local variables:
