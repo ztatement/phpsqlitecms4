@@ -1,5 +1,6 @@
 # phpSQLiteCMS
-[![Build Status]] [![GitHub version]]
+[![Build Status]] Zweig, Dateien noch unvollst√§ndig. - Branch, files still incomplete.
+[![GitHub version]] 
 
 
 <a href="https://www.demo-seite.com/path/to/phpsqlitecms/">phpSQLiteCMS</a> ist ein einfaches und leichtes Open-Source-Web-Content-Management-System (CMS) basiert auf <a href="http://php.net/">PHP</a> und <a href="http://www.sqlite.org/">SQLite</a>. Als SQLite, Datei-basiert, l&#228;uft es einfach "out of the box" ohne Installation.
@@ -15,6 +16,8 @@ Um das erstellen einer eigenen Webseite zu erleichtern wurde eine neue Klasse f√
 System Anforderungen
 --------------------
 
+> [!IMPORTANT]
+> requires `PHP 8.4` or greater.
 * Apache Web-Server mit <a href="http://httpd.apache.org/docs/2.4/mod/mod_rewrite.html">mod_rewrite</a> und <a href="http://httpd.apache.org/docs/2.4/howto/htaccess.html">.htaccess Datei-Unterst&#252;tzung </a> aktiviert
 * PHP 8.x mit <a href="http://php.net/manual/en/book.pdo.php">PDO</a> und <a href="http://php.net/manual/en/ref.pdo-sqlite.php">SQLite Treiber</a> aktiviert
 
