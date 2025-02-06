@@ -18,6 +18,8 @@
 
 namespace cms\includes\classes;
 
+use Exception;
+
 class Logger {
 
   // Log-Level definieren
@@ -58,11 +60,10 @@ class Logger {
 
 
 /**
-  * Loggt eine Nachricht basierend auf dem Log-Level.
+  * Erzeugt eine Nachricht basierend auf dem Log-Level.
   *
   * @param string $level Das Log-Level.
   * @param string $message Die zu loggende Nachricht.
-  * @param string $logFile Der Pfad zur Log-Datei.
   */
   public static function logMessage (string $level, string $message, string $logFile): void
   {
@@ -87,7 +88,13 @@ class Logger {
     $level = self::getLogLevel($settings); // Hole das aktuelle Log-Level
 
     // Nur loggen, wenn der gewählte Level den aktuellen Log-Level überschreitet
-    $levelsHierarchy = [self::LEVEL_DEBUG => 1,self::LEVEL_INFO => 2,self::LEVEL_WARNING => 3,self::LEVEL_ERROR => 4,self::LEVEL_CRITICAL => 5];
+    $levelsHierarchy = [
+      self::LEVEL_DEBUG => 1,
+      self::LEVEL_INFO => 2,
+      self::LEVEL_WARNING => 3,
+      self::LEVEL_ERROR => 4,
+      self::LEVEL_CRITICAL => 5
+    ];
 
     // Falls der aktuelle Level das gewählte Level überschreitet, logge die Nachricht
     if ($levelsHierarchy[$level] <= $levelsHierarchy[self::LEVEL_ERROR])
@@ -96,6 +103,35 @@ class Logger {
     }
   }
 
+
+/**
+  * Protokolliert eine Fehlermeldung mit optionalen Exception-Details.
+  *
+  * Diese Methode ermöglicht das Loggen von Fehlermeldungen. Wenn eine Exception
+  * übergeben wird, werden zusätzliche Details wie Nachricht, Datei und Zeilennummer
+  * der Exception dem Log hinzugefügt.
+  *
+  * @param string $message  Die zu protokollierende Fehlermeldung.
+  * @param Exception|null $exception  Optional: Eine Exception, deren Details dem Log hinzugefügt werden sollen.
+  *
+  * @return void
+  *
+  * @uses self::log()  Zum tatsächlichen Schreiben der Nachricht in die Log-Datei.
+  */
+  public static function logError($message, $exception = null)
+  {
+    $logMessage = $message;
+    if ($exception instanceof Exception)
+    {
+      $logMessage .= " Exception: " . $exception->getMessage() . 
+                     " in " . $exception->getFile() . 
+                     " on line " . $exception->getLine();
+    }
+    self::log([
+      'log_level' => LOG_LEVEL,
+      'log_file'  => LOG_FILE,
+        ], $logMessage);
+  }
 
 }
 
@@ -112,6 +148,7 @@ class Logger {
   * @see change.log
   *
   * $Date$     : $Revision$          : $LastChangedBy$  - Description
+  * 2025-02-06 : 4.5.0.2025.02.06    : ztatement        - erweitert logError 
   * 2025-02-05 : 4.5.0.2025.02.05    : ztatement        - neu angelegt
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
   * Local variables:
