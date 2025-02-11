@@ -17,6 +17,13 @@
   * - Sicherheitshandhabung
   */
 
+#namespace cms\includes\classes;
+
+#use DateTime;
+#use DateTimeZone;
+#use Exception;
+#use Localization;
+
 class Helpers
 {
   #private int $timestamp;
@@ -138,9 +145,19 @@ class Helpers
       'font'                            => 'z-IconPro-Light', // default Schriftart im phpSQLiteCMS
       'log_file'                        => './.log/_errors.log',
       'log_level'                       => 'DEBUG',
+      'debug_on_off'                    => '0',
 
       // Weitere Standardwerte können hier hinzugefügt werden
     ];
+
+    // Überprüfen, ob ein Datenbankwert keinen Standardwert hat
+  #  foreach ($settings as $key => $value)
+  #  {
+  #    if (!array_key_exists($key, $definedSettings))
+  #    {
+  #      Logger::log(LOG_SETTINGS, "Kein Standardwert für den Eintrag '{$key}' vorhanden.");
+  #    }
+  #  }
 
     // Merging der abgerufenen Einstellungen mit den Standardwerten
     // Die abgerufenen Werte überschreiben die Standardwerte, wenn sie vorhanden sind
@@ -222,13 +239,13 @@ class Helpers
   * 
   * @throws Exception  Wenn für die angegebene Sprache weder ein bekanntes Format noch ein Fallback vorhanden ist.
   */
-  public static function get_time_format($tlang = 'en_US')
+  public static function get_time_format($t_lang = 'en_US')
   {
     // Holen der Einstellungen für die Standardsprache der Seite
-    $tlang = Functions::get_settings('default_page_language');
+    $t_lang = Functions::get_settings('default_page_language');
 
     // Kurz-Format-Zeitangaben für verschiedene Sprachen
-    $short_tformat = [
+    $short_time_format = [
       'de_DE' => 'd.m.Y H:i',       // Deutschland
       'en_US' => 'm/d/Y h:i A',     // USA
       'fr_FR' => 'd/m/Y H:i',       // Frankreich
@@ -245,7 +262,7 @@ class Helpers
     ];
 
     // Langes-Format-Zeitangaben für verschiedene Sprachen
-    $long_tformat = [
+    $long_time_format = [
       'de_DE' => 'l, j. F Y H:i:s',    // Deutschland
       'en_US' => 'l, F j, Y h:i A',    // USA
       'fr_FR' => 'l d F Y H:i',        // Frankreich
@@ -264,7 +281,7 @@ class Helpers
     try
     {
       // Falls kein Format für die angegebene Sprache existiert, verwenden wir den Fallback
-      if (!isset($short_tformat[$tlang]) && !isset($long_tformat[$tlang]))
+      if (!isset($short_time_format[$t_lang]) && !isset($long_time_format[$t_lang]))
       {
         // Falls $settings['default_page_language'] nicht gesetzt ist, werfen wir eine Ausnahme
         if (!isset($settings['default_page_language']))
@@ -275,7 +292,7 @@ class Helpers
       }
 
       // Rückgabe des Formats für die angegebene Sprache
-      return $short_tformat[$tlang] . ' ' . $long_tformat[$tlang];
+      return $short_time_format[$t_lang] . ' ' . $long_time_format[$t_lang];
     }
     catch (Exception $e)
     {
@@ -285,6 +302,57 @@ class Helpers
       // Rückgabe eines Standardformats, falls ein Fehler auftritt
       return 'Y-m-d H:i'; // Standardwert
     }
+  }
+
+
+/**
+  * Diese Methode gibt die entsprechende Zeitzone basierend auf der übergebenen Sprachkodierung zurück.
+  *
+  * Es wird zunächst die Standardzeitzone aus den Einstellungen abgerufen.
+  * Anschließend wird überprüft, ob die übergebene Sprachkodierung (tz_lang)
+  * in der Liste der vordefinierten Zeitzonen vorhanden ist.
+  * Wenn die Sprachkodierung in der Liste gefunden wird, wird die entsprechende Zeitzone zurückgegeben.
+  * Andernfalls wird die Standardzeitzone zurückgegeben.
+  *
+  * @param string $tz_lang  Die Sprachkodierung, für die die Zeitzone ermittelt 
+                            werden soll (z.B. 'de_DE' für Deutschland).
+  * @return string $timezone  Die entsprechende Zeitzone oder die Standardzeitzone,
+                              wenn die Sprachkodierung nicht gefunden wird.
+  */
+  public static function get_time_zone($tz_lang)
+  {
+    // Holen der Einstellungen für die Standardzeitzone
+    $settings = self::initializeSettings([]);
+    $default_timezone = $settings['time_zone'];
+
+    // Vordefinierte Zeitzonen für verschiedene Sprachkodierungen
+    $selection_time_zone = [
+      'de_DE' => 'Europe/Berlin',     // Deutschland
+      'en_US' => 'America/New_York',  // USA
+      'fr_FR' => 'Europe/Paris',      // Frankreich
+      'zh_CN' => 'Asia/Shanghai',     // China
+      'ja_JP' => 'Asia/Tokyo',        // Japan
+      'ru_RU' => 'Europe/Moscow',     // Russland
+      'es_ES' => 'Europe/Madrid',     // Spanien
+      'it_IT' => 'Europe/Rome',       // Italien
+      'hi_IN' => 'Asia/Kolkata',      // Indien
+      'pt_BR' => 'America/Sao_Paulo', // Brasilien
+      'bg_BG' => 'Europe/Sofia',      // Bulgarien
+      'ko_KR' => 'Asia/Seoul',        // Südkorea
+      'th_TH' => 'Asia/Bangkok'       // Thailand
+    ];
+
+    // Zeitzone setzen oder Standardzeitzone verwenden
+    if (array_key_exists($tz_lang, $selection_time_zone))
+    {
+        $timezone = $selection_time_zone[$tz_lang];
+    }
+    else
+    {
+        $timezone = $default_timezone;
+    }
+
+    return $timezone;
   }
 
 
@@ -361,19 +429,19 @@ class Helpers
   {
     // Standardwerte für eine neue Seite setzen
     return [
-      'time' => date("Y-m-d H:i:s"),
-      'last_modified' => date("Y-m-d H:i:s"),
-      'display_time' => 0,
-      'include_page' => 0,
-      'include_order' => 0,
-      'include_rss' => 0,
+      'time'            => date("Y-m-d H:i:s"),
+      'last_modified'   => date("Y-m-d H:i:s"),
+      'display_time'    => 0,
+      'include_page'    => 0,
+      'include_order'   => 0,
+      'include_rss'     => 0,
       'include_sitemap' => 0,
-      'include_news' => 0,
-      'link_name' => Localization::$lang['teaser_default_linkname'] ?? 'teaser_default_linkname',
-      'template' => $settings['default_template'] ?? 'default_template',
-      'menu_1' => $settings['default_menu'] ?? 'default_menu',
+      'include_news'    => 0,
+      'link_name'       => Localization::$lang['teaser_default_linkname'] ?? 'teaser_default_linkname',
+      'template'        => $settings['default_template'] ?? 'default_template',
+      'menu_1'          => $settings['default_menu'] ?? 'default_menu',
       'edit_permission_general' => 0,
-      'status' => 2
+      'status'          => 2
       // ... weitere Standardwerte analog ...
     ];
   }
@@ -467,14 +535,14 @@ class Helpers
   * Änderung:
   *
   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ *
-  * @LastModified: 2025-02-05 
-  * @date $LastChangedDate: Wed, 05 Feb 2025 14:21:05 +0100 $
+  * @LastModified: 2025-02-11 
+  * @date $LastChangedDate: Wed, Tue, 11 Feb 2025 13:06:08 +0100 $
   * @editor: $LastChangedBy: ztatement $
   * -------------
-  * changelog:
   * @see change.log
   *
   * $Date$     : $Revision$          : $LastChangedBy$  - Description
+  * 2025-02-11 : 4.5.0.2025.02.11    : ztatement        - added: get_time_zone
   * 2025-02-03 : 4.5.0.2025.02.03    : ztatement        - added: initializeSettings
   * 2025-01-29 : 4.5.0.2025.01.29    : ztatement        - added: get_time_format
   * 2025-01-23 : 4.5.0.2025.01.23    : ztatement        - added: formatTimestamp kleine korrekturen
