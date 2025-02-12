@@ -1,11 +1,11 @@
 # phpSQLiteCMS
-[![Build Status]] Zweig, Dateien noch unvollständig. - Branch, files still incomplete.
-[![GitHub version]] 
+>[![Build Status]] Zweig, Dateien noch unvollständig. - Branch, files still incomplete.
+>[![GitHub version]] 
 
 
 <a href="https://www.demo-seite.com/path/to/phpsqlitecms/">phpSQLiteCMS</a> ist ein einfaches und leichtes Open-Source-Web-Content-Management-System (CMS) basiert auf <a href="http://php.net/">PHP</a> und <a href="http://www.sqlite.org/">SQLite</a>. Als SQLite, Datei-basiert, l&#228;uft es einfach "out of the box" ohne Installation.
 
-Diese modifizierte Version4 in Deutsch basiert auf dem Original <a href="https://phpsqlitecms.hoschek.com/">phpSQLiteCMS</a> und wurde Erfolgreich getestet unter Apache 2.4.62.1 und PHP 8.4.3 .<br>
+Diese modifizierte Version4 in Deutsch basiert auf dem Original <a href="https://phpsqlitecms.hoschek.com/">phpSQLiteCMS</a> und wurde Erfolgreich getestet unter Apache 2.4.62.1 und PHP 8.4.4 .<br>
 Um das erstellen einer eigenen Webseite zu erleichtern wurde eine neue Klasse für Platzhalter Bilder hinzugefügt.
 
 <div class="container" style=".container{display:flex;justify-content:space-between;}.container img{max-width:48%;height:auto;}">
